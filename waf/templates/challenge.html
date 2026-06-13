@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Güvenlik Kontrolü</title>
+<style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+   background:radial-gradient(ellipse at top,#0a1628,#020617 60%);color:#e2e8f0}
+ .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:20px}
+ .card{width:100%;max-width:480px;background:rgba(15,23,42,.65);border:1px solid rgba(59,130,246,.25);
+   border-radius:16px;padding:40px 32px;box-shadow:0 25px 60px rgba(0,0,0,.5);
+   backdrop-filter:blur(20px);text-align:center}
+ .logo{font-size:64px;margin-bottom:18px;filter:drop-shadow(0 0 20px rgba(59,130,246,.4))}
+ h1{font-size:1.4rem;margin-bottom:10px;background:linear-gradient(90deg,#60a5fa,#a78bfa);
+   -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+ p{color:#94a3b8;font-size:.88rem;line-height:1.6;margin-bottom:24px}
+ .spinner{width:54px;height:54px;margin:20px auto;border:3px solid rgba(59,130,246,.2);
+   border-top-color:#3b82f6;border-radius:50%;animation:spin .8s linear infinite}
+ @keyframes spin{to{transform:rotate(360deg)}}
+ .progress{width:100%;height:6px;background:rgba(51,65,85,.5);border-radius:3px;overflow:hidden;margin-top:18px}
+ .bar{height:100%;width:0;background:linear-gradient(90deg,#3b82f6,#a78bfa);transition:width .25s ease}
+ .meta{margin-top:22px;font-family:ui-monospace,monospace;font-size:.72rem;color:#64748b}
+ .err{color:#f87171;padding:14px;background:rgba(248,113,113,.1);border-radius:8px;margin-top:16px}
+ .brand{margin-top:18px;font-size:.7rem;color:#475569;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="card">
+   <div class="logo">🛡️</div>
+   <h1>Güvenlik Doğrulaması</h1>
+   <p>Sitenize erişiminizi doğruluyoruz. Tarayıcınız otomatik olarak doğrulandıktan sonra yönlendirileceksiniz.</p>
+   <div class="spinner" id="sp"></div>
+   <div class="progress"><div class="bar" id="bar"></div></div>
+   <div class="meta" id="meta">İşlem başlatılıyor…</div>
+   <div id="err"></div>
+   <div class="brand">🦅 EAGLE GUARD WAF · Proof-of-Work Challenge</div>
+ </div>
+</div>
+<script>
+(async function(){
+  const meta=document.getElementById('meta'),bar=document.getElementById('bar'),err=document.getElementById('err');
+  const set=(p,t)=>{bar.style.width=p+'%';if(t)meta.textContent=t};
+  try {
+    set(10,'Challenge alınıyor...');
+    const r1=await fetch('/__eg_verify?op=start',{credentials:'include'});
+    const ch=await r1.json();
+    if(!ch.ok) throw new Error(ch.error||'start failed');
+    set(30,'PoW çözülüyor (zorluk: '+ch.difficulty+')...');
+    // Küçük PoW: SHA-256(token+nonce) hash'i "00..0" ile başlamalı
+    const difficulty=ch.difficulty, token=ch.token;
+    const enc=new TextEncoder();
+    let nonce=0,hex='';
+    const prefix='0'.repeat(difficulty);
+    const t0=performance.now();
+    while(true){
+      const buf=enc.encode(token+':'+nonce);
+      const h=await crypto.subtle.digest('SHA-256',buf);
+      hex=Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      if(hex.startsWith(prefix)) break;
+      nonce++;
+      if(nonce%2000===0){ set(30+Math.min(50,nonce/200),'PoW: '+nonce+' denendi...'); await new Promise(r=>setTimeout(r,0)); }
+      if(nonce>500000) throw new Error('PoW timeout');
+    }
+    const dt=Math.round(performance.now()-t0);
+    set(85,'Doğrulama gönderiliyor ('+dt+'ms, '+nonce+' nonce)...');
+    const r2=await fetch('/__eg_verify?op=solve',{method:'POST',credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token,nonce,hash:hex.slice(0,32),took:dt})});
+    const res=await r2.json();
+    if(!res.ok) throw new Error(res.error||'verify failed');
+    set(100,'✓ Doğrulandı! Yönlendiriliyor...');
+    setTimeout(()=>{ location.href = (new URLSearchParams(location.search).get('r')) || '/'; },500);
+  } catch(e) {
+    document.getElementById('sp').style.display='none';
+    err.innerHTML='<div class="err">❌ Doğrulama başarısız: '+e.message+'<br><small>Sayfayı yenileyin veya 1 dakika sonra tekrar deneyin.</small></div>';
+  }
+})();
+</script>
+</body>
+</html>

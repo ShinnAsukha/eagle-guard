@@ -1,0 +1,42 @@
+#!/bin/bash
+# Eagle Guard — XDP CLI wrapper
+# Kullanım:
+#   eagle-xdp start|stop|status|reload
+#   eagle-xdp ban 1.2.3.4 | unban | allow | noallow | hardban | list | flush
+set -u
+EG=/opt/eagle-guard
+LOADER="$EG/xdp/eagle-xdp-loader.sh"
+CTL="$EG/xdp/eagle-xdp-ctl.sh"
+
+case "${1:-}" in
+    start|load)    exec "$LOADER" load ;;
+    stop|unload)   exec "$LOADER" unload ;;
+    reload|restart) exec "$LOADER" reload ;;
+    status)        exec "$LOADER" status ;;
+    build)         exec bash "$EG/xdp/build.sh" ;;
+    ban|unban|allow|noallow|hardban|unhardban|list|ls|flush|whitelist-sync)
+        exec "$CTL" "$@" ;;
+    *)
+        cat <<USAGE
+Eagle Guard XDP CLI
+Kullanım:
+  eagle-xdp start           XDP'yi yükle ve NIC'e attach et
+  eagle-xdp stop            XDP'yi detach et
+  eagle-xdp reload          Yeniden yükle
+  eagle-xdp status          Durum + istatistikler
+  eagle-xdp build           BPF objesi derle
+
+  eagle-xdp ban <ip/prefix>        Kara listeye ekle
+  eagle-xdp unban <ip/prefix>
+  eagle-xdp allow <ip/prefix>      Beyaz listeye ekle (asla drop)
+  eagle-xdp hardban <ip/prefix>    SSH/web dahil TÜM drop (dikkat!)
+  eagle-xdp list [blacklist|whitelist|hardban]
+  eagle-xdp flush <map>
+  eagle-xdp whitelist-sync         config/whitelist.txt → map
+
+GÜVENLİK: SSH (22), HTTP (80), HTTPS (443) hiçbir ban komutundan
+etkilenmez (BPF kodunda sabit). Yalnızca 'hardban' komutu bu sabiti
+aşar ve özel senaryolar içindir.
+USAGE
+        ;;
+esac

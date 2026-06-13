@@ -1,0 +1,90 @@
+{
+  "version": 2,
+  "updated": "2026-04-23",
+  "rules": [
+    {
+      "id": "EG-1001",
+      "name": "WordPress xmlrpc.php brute-force engeli",
+      "enabled": true,
+      "action": "block",
+      "match": { "type": "path", "pattern": "^/xmlrpc\\.php$" }
+    },
+    {
+      "id": "EG-1002",
+      "name": "Config ve hassas dosya erişim engeli",
+      "enabled": true,
+      "action": "block",
+      "match": { "type": "path", "pattern": "\\.(env|git|svn|sql|bak|old|backup|swp|conf|cfg|ini|log|pass|shadow)$" }
+    },
+    {
+      "id": "EG-1003",
+      "name": "PHP bilgi sızdırma dosyaları",
+      "enabled": true,
+      "action": "block",
+      "match": { "type": "path", "pattern": "^/(phpinfo|info|test|config|setup|install|upgrade)\\.php$" }
+    },
+    {
+      "id": "EG-1004",
+      "name": "WordPress login brute-force challenge",
+      "enabled": true,
+      "action": "challenge",
+      "match": { "type": "path", "pattern": "^/(wp-login\\.php|wp-admin/admin-ajax\\.php)$" }
+    },
+    {
+      "id": "EG-1005",
+      "name": "Tehlikeli HTTP metodları engeli",
+      "enabled": true,
+      "action": "block",
+      "match": { "type": "method", "pattern": "^(TRACE|CONNECT|DEBUG|TRACK|MOVE|COPY|PROPFIND|PROPPATCH|MKCOL|LOCK|UNLOCK)$" }
+    },
+    {
+      "id": "EG-1006",
+      "name": "SQL injection tespit engeli",
+      "enabled": true,
+      "action": "block",
+      "match": { "type": "query", "pattern": "(?i)(union.*select|select.*from|insert.*into|drop.*table|alter.*table|delete.*from|update.*set|exec.*\\(|execute.*\\(|xp_cmdshell|sp_executesql)" }
+    },
+    {
+      "id": "EG-1007",
+      "name": "XSS saldırı engeli",
+      "enabled": true,
+      "action": "block",
+      "match": { "type": "query", "pattern": "(?i)(<script[\\s>]|javascript:|vbscript:|onload\\s*=|onerror\\s*=|onclick\\s*=|<iframe|<img.*onerror)" }
+    },
+    {
+      "id": "EG-1008",
+      "name": "Path traversal (LFI/RFI) engeli",
+      "enabled": true,
+      "action": "block",
+      "match": { "type": "path", "pattern": "(\\.\\./|\\.\\.%2[fF]|%2e%2e%2f|%252e%252e)" }
+    },
+    {
+      "id": "EG-1009",
+      "name": "Remote code execution (RCE) engeli",
+      "enabled": true,
+      "action": "block",
+      "match": { "type": "query", "pattern": "(?i)(eval\\s*\\(|base64_decode\\s*\\(|system\\s*\\(|exec\\s*\\(|passthru\\s*\\(|shell_exec\\s*\\(|popen\\s*\\(|proc_open\\s*\\()" }
+    },
+    {
+      "id": "EG-1010",
+      "name": "Gizli dizin taraması engeli (.git .svn .hg)",
+      "enabled": true,
+      "action": "block",
+      "match": { "type": "path", "pattern": "^/(\\.git|\\.svn|\\.hg|\\.bzr|\\.env|vendor/composer|\\.DS_Store)" }
+    },
+    {
+      "id": "EG-1011",
+      "name": "Yönetici panel kaba kuvvet challenge",
+      "enabled": true,
+      "action": "challenge",
+      "match": { "type": "path", "pattern": "^/(admin|administrator|panel|controlpanel|cpanel|dashboard|manage|management)(/|$)" }
+    },
+    {
+      "id": "EG-1012",
+      "name": "Nmap/scanner User-Agent engeli",
+      "enabled": true,
+      "action": "block",
+      "match": { "type": "ua", "pattern": "(?i)(nikto|sqlmap|nmap|masscan|zgrab|havij|acunetix|w3af|skipfish|arachni|openvas|dirbuster|gobuster|wpscan|fuzz|wfuzz|nuclei|feroxbuster)" }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+PRODUCT=Eagle Guard
+VERSION=7.3
+BUILD=2026.04.24
+TYPE=Enterprise DDoS Protection + WAF
+STATUS=Production Ready
+CODENAME=Optimized WAF Edition
+
+Features:
+- Layer 4 DDoS Protection (SYN/UDP/ICMP/RST)
+- Layer 7 Application Protection (HTTP/SSH/FTP)
+- WAF with OWASP CRS
+- RapidReset Protection
+- Game Server Protection
+- Dashboard + API
+- Fail2ban Integration
+- Real-time Metrics
+- Log Analysis
+- IP Management
+
+GitHub: https://github.com/USERNAME/eagle-guard
+Maintained by: Creeart Cloud

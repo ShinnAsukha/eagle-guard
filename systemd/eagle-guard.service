@@ -1,0 +1,23 @@
+[Unit]
+Description=Eagle Guard L4/L7/XDP DDoS Protection v7.2
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStartPre=/bin/mkdir -p /opt/eagle-guard/data /opt/eagle-guard/logs /opt/eagle-guard/config
+# XDP loader — best-effort; başarısız olsa bile iptables katmanı çalışır.
+# XDP programı SSH/HTTP/HTTPS'i KODDA zorla geçirir, bu yüzden SSH erişimi korunur.
+ExecStartPre=-/bin/bash -c '/opt/eagle-guard/xdp/eagle-xdp-loader.sh load || true'
+ExecStart=/opt/eagle-guard/scripts/eagle-guard.sh start
+# Durdururken önce XDP detach (temizlik), sonra iptables stop
+ExecStop=-/bin/bash -c '/opt/eagle-guard/xdp/eagle-xdp-loader.sh unload || true'
+ExecStop=/opt/eagle-guard/scripts/eagle-guard.sh stop
+Restart=on-failure
+RestartSec=10
+PIDFile=/var/run/eagle-guard.pid
+SyslogIdentifier=eagle-guard
+User=root
+
+[Install]
+WantedBy=multi-user.target
